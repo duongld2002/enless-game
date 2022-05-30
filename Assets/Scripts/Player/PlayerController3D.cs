@@ -47,15 +47,22 @@ public class PlayerController3D : MonoBehaviour
             {
                 Jump();
             }
+            if (SwipeManager.swipeDown && !isSliding)
+            {
+                StartCoroutine(Slide());
+            }
         } else
         {
             direction.y += Gravity * Time.deltaTime;
+            if (SwipeManager.swipeDown && !isSliding)
+            {
+                StartCoroutine(Slide());
+                direction.y = -8;
+            }
         }
         
-        if (SwipeManager.swipeDown && !isSliding)
-        {
-            StartCoroutine(Slide());
-        }
+        
+
         //Gather the inputs on which lane we should be
         if (SwipeManager.swipeRight)
         {
@@ -81,15 +88,23 @@ public class PlayerController3D : MonoBehaviour
             targetPosition += Vector3.right * laneDistance;
         }
 
-        transform.position = Vector3.Lerp(transform.position, targetPosition, 70 * Time.fixedDeltaTime);
-        controller.center = controller.center;
-    }
+        if(transform.position != targetPosition)
+        {
+            Vector3 diff = targetPosition - transform.position;
+            Vector3 moverDir = diff.normalized * 25 * Time.deltaTime;
+            if (moverDir.sqrMagnitude < diff.magnitude)
+                controller.Move(moverDir);
+            else
+                controller.Move(diff);
+        }
+        //transform.position = Vector3.Lerp(transform.position, targetPosition, 70 * Time.fixedDeltaTime);
+        //controller.center = controller.center;
 
-    private void FixedUpdate()
-    {
+        //Move Player
         if (!PlayerManager.isGameStarted)
             return;
-        controller.Move(direction * Time.fixedDeltaTime);
+        controller.Move(direction * Time.deltaTime);
+
     }
 
     private void Jump()
